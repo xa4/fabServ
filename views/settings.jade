@@ -1,0 +1,30 @@
+extends layout
+
+block content
+
+	div(data-role='page')
+
+		div(data-role='header',data-add-back-btn="true")
+			a(href="/",data-icon="back") Retour
+			h1 Param&egrave;tres
+
+		div(data-role='content')
+			form(action="/#{module._id}",method="post",class="ui-body ui-body-b ui-corner-all",id="form")
+					div(data-role="fieldcontain")
+						label(for="name")
+							|Nom du module:
+						input(type="text",name="name",id="name",value="#{module.name}",data-mini="true")
+					div(data-role="fieldcontain")
+						label(for="name")
+							|ID du module:
+						input(type="number",name="address",id="address",value="#{module.address}",data-mini="true")
+						input(type="hidden",name="id",id="id",value="#{module._id}")
+
+					div(data-role="fieldcontain")
+						label(for="room",class="select")
+							|Pi&egrave;ce:
+						select(name="room",id="room",data-mini="true",data-theme="c")
+							each room, i in rooms
+								option(value="#{room.value.id}", selected=room.value.id == module.room) #{room.value.name}
+					a(data-theme="b",data-role="button",onclick='document.getElementById("form").submit()') Sauvegarder
+					//input(type="submit",data-theme="b",name="submit",value="submit value")

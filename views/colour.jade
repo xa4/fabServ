@@ -1,0 +1,42 @@
+extends layout
+
+block content
+
+	div(data-role='page', id='g1')
+
+		div(data-role='header',data-add-back-btn="true")
+			script
+				$("a").click(function () {
+					$("svg").remove();
+				});
+
+			a(data-rel="back",data-icon="back") Retour
+			h1 Couleur
+
+		div(data-role='content')
+
+			form(name="first",action="c",method="get",data-ajax="false")
+			div(id="content",style="height: 350px;")
+			div(id="sample",style="width: 250px; height: 250px; webkit-border-radius: 150px; border-radius: 150px; -moz-border-radius: 150px; background-color:#fff; position:absolute; top:80px; left:30px;")
+			div(style="width: 185px; height: 80px; position:absolute; top:150px; left:70px;")
+				h1(id="h1")	Pick a color
+			div(style="width: 200px; height: 80px; position:absolute; top:210px; left:70px;")
+				form
+					input(type="text",id="ir",style="display: none;",onchange="sendUpdate(this)")
+					input(type="text",id="ig",style="display: none;",onchange="sendUpdate(this)")
+					input(type="text",id="ib",style="display: none;",onchange="sendUpdate(this)")
+				b R
+				span(id="vr")
+				span //
+				b G
+				span(id="vg")
+				span //
+				b B
+				span(id="vb")
+			div(id="bl",style="background-image: url(btn-low.png); width: 70px; height: 70px; position:absolute; top:330px; left:10px;")
+			div(id="bh",style="background-image: url(btn-high.png); width: 70px; height: 70px; position:absolute; top:330px; left:240px;")
+
+		script(type='text/javascript', src='./javascripts/raphael.js')
+		script(type='text/javascript', src='./javascripts/colorpicker.js')
+		script(type='text/javascript', src='./javascripts/colorwheel-raph.js')	
+		script(type='text/javascript', src='./javascripts/myScript.js')

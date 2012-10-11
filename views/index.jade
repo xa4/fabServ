@@ -1,0 +1,84 @@
+extends layout
+
+block content
+
+	script
+		if (document.getElementById("svg")) {
+			$("svg").remove();
+		}
+	//-
+		script
+			$(document).bind('pageinit', function () {
+				$("<div class='ui-loader ui-overlay-shadow ui-body-a ui-corner-all'><h4>&nbsp;module updated&nbsp;</h4></div>").css({ "display": "block", "opacity": 0.96, "top": $(window).scrollTop() + 100 })
+				.appendTo( $.mobile.pageContainer )
+				.delay( 1500 )
+				.fadeOut( 400, function(){
+				$(this).remove();
+				});
+			});
+
+	each room, i in rooms
+		div(data-role='page', id='g#{i}')
+			div(data-role='content')
+				table
+					tr
+						td(align="right")
+							div(style="float:right;")
+								img(src="/images/humidity-icon.png",style="float:left;padding-right:1px;padding-top:13px;")
+								div(style="float:left;padding-right:30px;padding-top:11px;font-size:30px;") 43%
+								img(src="/images/temperature-icon2.png",style="float:left;padding-right:10px;padding-top:13px;")
+								div(style="float:left;font-size:52px;") 21&#8451;
+
+				each module, j in modules	
+					if (module.value.room == i+1)
+						if (module.value.type == 1)
+							script(type="text/javascript")
+								$('.slider#{i}-#{j}').live('change mouseup mouseout touchmove touchend', function(){
+									if (event.type == 'mouseup' || event.type == 'touchend') {
+										socket.emit('updateLightInDB', { "id": "#{module.value.id}", "dim": document.getElementById('slider-#{i}-#{j}').value, "state": document.getElementById('flip-#{i}-#{j}').value, "collapsed":0 })
+									} else if (event.type == 'mousemove' || event.type == 'touchmove'){
+										socket.emit('updateLight', { "id": #{module.value.address}, "lightVal": document.getElementById('slider-#{i}-#{j}').value, "collapsed":0 })
+									}
+								});
+								$('.flip#{i}-#{j}').live('change', function(){
+									socket.emit('updateLightInDB', { "id": "#{module.value.id}", "state": document.getElementById('flip-#{i}-#{j}').value, })
+								});
+								$('.c-#{i}-#{j}').live('expand', function(){
+									console.log("expanded");
+									socket.emit('updateLightInDB', { "id": "#{module.value.id}", "collapsed":0 })
+								});
+								$('.c-#{i}-#{j}').live('collapse', function(){
+									console.log("collapsed");
+									socket.emit('updateLightInDB', { "id": "#{module.value.id}", "collapsed":1 })
+								});
+							div(data-role='collapsible',data-collapsed='true',data-iconpos='right',data-theme="c",data-content-theme="d",class="c-#{i}-#{j}")
+								h3=module.value.name
+								div(data-role='fieldcontain',class="slider#{i}-#{j}")
+									a(href="/settings/#{module.value.id}",data-role="button",data-icon="gear",data-iconpos="notext",style="float:right")
+									label(for='flip-#{i}-#{j}',style="float:left;padding-right:80px") Etat
+									select(name='slider',id='flip-#{i}-#{j}',data-role='slider')
+										option OFF
+										option( selected=module.value.state == 'ON') ON
+								div(class="slider#{i}-#{j}",data-role='fieldcontain')
+									label(for='slider-#{i}-#{j}') Intensit&eacute;
+									input(type='range',name='b1',id='slider-#{i}-#{j}',value='#{module.value.dim}',min='0',max='100',data-highlight='true')
+
+						else if (module.value.type == 2)
+							div(data-role='collapsible',data-collapsed='false',data-iconpos='right',data-theme="c",data-content-theme="d")
+								h3=module.value.name
+								div(data-role='fieldcontain')
+									a(href="/settings/#{module.value.id}",data-role="button",data-icon="gear",data-iconpos="notext",style="float:right")
+									label(for='flip-a',style="float:left;padding-right:80px") Etat
+									select(name='slider',id='flip-a',data-role='slider')
+										option OFF
+										option ON
+								div(data-role='fieldcontain')
+									label(for='flip-a',style="float:left;padding-right:80px") Couleur
+									a(href="/colour",data-inline="true",data-shadow="true",data-iconshadow="true",data-role="button",data-mini="true") <i class="icon-edit"></i> Changer
+
+			div(data-role='footer',data-position='fixed')	
+				div(data-role='navbar')
+					ul
+						each room, k in rooms
+							- i === k ? attr = 'ui-btn-active ui-state-persist' : attr = ''
+							li: a(href='#g#{k}',id='g-#{i}-#{k}',data-prefetch='true',data-icon='arrow-u',class=attr) #{room.value.name}
