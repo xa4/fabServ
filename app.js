@@ -6,7 +6,7 @@ var express = require('express')
   , routes = require('./routes')
   , module = require('./routes/module')({app: app})
   , http = require('http')
-  //, https = require('https')
+  // , https = require('https')
   , path = require('path')
   , SerialPort = require("serialport").SerialPort
   , nano = require('nano')('http://admin:pouet@localhost:5984')
@@ -17,16 +17,18 @@ var express = require('express')
   , fs = require('fs')
   , async = require('async');
 
-/*
-var privateKey = fs.readFileSync('./ssl/server.key').toString();
-var certificate = fs.readFileSync('./ssl/server.crt').toString();
-var options = {
-  key : privateKey
-, cert : certificate
-}
-*/
+/**
+ * Settings for https server
+ */
+// var privateKey = fs.readFileSync('./ssl/server.key').toString();
+// var certificate = fs.readFileSync('./ssl/server.crt').toString();
+// var options = {
+//   key : privateKey
+// , cert : certificate
+// }
 
-var serialPort = new SerialPort("/dev/ttyAMA0", {baudrate : 57600});
+
+var serialPort = new SerialPort("/dev/ttyAMA0", {baudrate : 115200});
 
 var message = new Array();
 
@@ -48,6 +50,9 @@ app.configure('development', function(){
   app.use(express.errorHandler());
 });
 
+/**
+ * main page
+ */
 app.get('/', function(req, res){
   async.parallel({
       modules: function(callback){
@@ -75,8 +80,14 @@ app.get('/', function(req, res){
   });
 });
 
+/**
+ * displays colour page
+ */
 app.get('/colour', module.colour);
 
+/**
+ * displays settings page for a specific module
+ */
 app.get('/settings/:id', function(req, res){
   async.parallel({
       module: function(callback){
@@ -100,6 +111,9 @@ app.get('/settings/:id', function(req, res){
   });
 });
 
+/**
+ * updates data for a specific module
+ */
 app.post('/:id', function(req, res){
   async.parallel({
       module: function(callback){
@@ -131,15 +145,14 @@ app.post('/:id', function(req, res){
 });
 
 
-
 /**
  * Start server
  */
-/*
-var server = https.createServer(options,app).listen(app.get('port'), function(){
-  console.log("Express server listening on port " + app.get('port'));
-});
-*/
+
+// var server = https.createServer(options,app).listen(app.get('port'), function(){
+//   console.log("Express server listening on port " + app.get('port'));
+// });
+
 var server = http.createServer(app);
 server.listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
@@ -155,15 +168,18 @@ var sio = io.listen(server);
 sio.on('connection', function (socket) {
   socket.emit('news', { hello: 'xav' });
   socket.on('updateLight', function (data) {
-    /*
+    
     message.length = 0;
     message = [
+                0x69,
                 0x01,
-                0xCC,
-                data.lightVal
+                0x01,
+                0x01,
+                data.lightVal,
+                0x96,
               ];
     serialPort.write(message);
-    */
+    
     console.log(data);
 
   });
@@ -185,6 +201,17 @@ sio.on('connection', function (socket) {
   });
   socket.on('updateRGB', function (data) {
     console.log("new rgb values: ", data);
+    message = [
+                0x61,
+                0x01,
+                4,
+                0xCC,
+                data.r,
+                data.g,
+                data.b,
+                0x7A,
+              ];
+    serialPort.write(message);
   });
 });
 
